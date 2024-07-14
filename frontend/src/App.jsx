@@ -23,7 +23,7 @@ function App() {
           throw new Error(data.error || "Somthing went wrong");
         }
 
-        console.log("authUser is here : " , data);
+        // console.log("authUser is here : " , data);
         return data;
       } catch (error) {
         throw new Error(error);
@@ -41,7 +41,7 @@ function App() {
     )
   }
 
-  console.log("authUser is here" , authUser);
+  // console.log("authUser is here" , authUser);
   return (
     <div className='flex max-w-6xl mx-auto'>
       {authUser && <Sidebar/>}
