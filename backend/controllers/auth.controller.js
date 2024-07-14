@@ -5,7 +5,7 @@ import { generateTokenSetCookie } from '../lib/utils/generateToken.js';
 export const signup = async (req,res)=>{
     try {
         const { fullname , username , email , password } = req.body;
-
+        console.log("fullname" , req.body);
         const emailRegex =  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if(!emailRegex.test(email)){
             console.log(email);
