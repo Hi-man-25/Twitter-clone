@@ -5,23 +5,24 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { queryClient, useMutation, useQuery } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import {useQuery , useQueryClient , useMutation} from '@tanstack/react-query';
+import {toast} from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
 	const {data:authUser} = useQuery({queryKey : ["authUser"]});
+	const queryClient = useQueryClient();
 
-	const {mutate : deletePost , isPending , error} = useMutation({
+	const {mutate : deletePost , isPending} = useMutation({
 		mutationFn : async () =>{
 			try {
-				const res =  await fetch(`/api/posts/${post._id}` ,{
+				const res =  await fetch(`/api/post/${post._id}` ,{
 					method : "DELETE",
 			 	});
 			 	const data = await res.json();
 			 	if(!res.ok) {
-					throw new Error(error.message || "something went wrong");
+					throw new Error(data.error || "something went wrong");
 				}
 				 return data;
 			} catch (error) {
