@@ -20,7 +20,7 @@ const NotificationPage = () => {
 				}
 				return data;
 			
-		 		} catch (error) {
+		} catch (error) {
 					throw new Error(error);
 				}		
 			},
