@@ -14,6 +14,7 @@ const RightPanel = () => {
 				if(!res.ok){
 					throw new Error(data.message || "Something went Wrong");
 				}
+				// console.log(data);
 				return data;
 			} catch (error) {
 				throw new Error(error.message);
@@ -23,8 +24,8 @@ const RightPanel = () => {
 
 	const { follow , isPending } = useFollow();
 
-
-	if(suggestedUsers.length === 0){
+	// console.log(suggestedUsers && suggestedUsers.length === 0);
+	if(!suggestedUsers || suggestedUsers.length === 0){
 		return <div className="md:w-64 w-0"></div>
 	}
 

@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import Post from '../models/post.model.js';
 import {v2 as cloudinary} from 'cloudinary';
+import Notification from '../models/notification.model.js';
+
 export  const createPost = async(req,res) => {
     cloudinary.config({
     cloud_name : 'dpynmf6k2',
