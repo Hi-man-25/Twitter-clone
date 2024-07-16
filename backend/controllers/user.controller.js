@@ -2,6 +2,7 @@ import User from '../models/user.model.js'
 import bcrypt from 'bcrypt';
 import { v2 as cloudinary} from 'cloudinary';
 
+
 import Notification from '../models/notification.model.js';
 export const getUserProfile = async (req,res) => {
     const { username } = req.params;
@@ -88,28 +89,34 @@ export const getSuggestedUsers = async (req,res) => {
 }
 
 export const updateUser = async (req,res) =>{
-    const  { fullname , email , username , currentPassword , newPassword , bio , link } = req.body;
+    let  { fullname , email , username , currentPassword , newPassword , bio , link } = req.body;
     let { profileImg , coverImg } = req.body;
+    cloudinary.config({
+        cloud_name : 'dpynmf6k2',
+        api_key : '511771528827698',
+        api_secret : 'E-YyoiWAy5PNwWGrnmldLu7e4tw',
+    })
 
-    const userId = req.user._id;
+    let userId = req.user._id;
 
     try {
-         const user = await User.findById(userId);
+         let user = await User.findById(userId);
          if(!user) return res.status(404).json({ message : "user not found"});
          if((!newPassword && currentPassword) || (newPassword && !currentPassword)){
             return res.status(400).json({ error: "Please provide both current and new password"});
          }
 
          if(currentPassword && newPassword){
-            const isMatch = await bcrypt.compare(currentPassword , user.password);
+            let isMatch = await bcrypt.compare(currentPassword , user.password);
             if(!isMatch) return res.status(400).json({ error: "Current password is incorrect"});
             if(newPassword.length < 6){
                 return res.status(400).json({ error : "password must be at lease 6 character long"});
             }
 
-            const salt = await bcrypt.genSalt(10);
+            let salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(newPassword , salt);
          }
+
 
          if(profileImg){
             if(user.profileImg){
@@ -117,9 +124,10 @@ export const updateUser = async (req,res) =>{
 
             }
 
-            const uploadResponse = await cloudinary.uploader.upload(profileImg);
+            let uploadResponse = await cloudinary.uploader.upload(profileImg);
             profileImg = uploadResponse.secure_url;
          }
+
 
          if(coverImg){
             if(user.coverImg){
@@ -127,9 +135,10 @@ export const updateUser = async (req,res) =>{
 
             }
 
-            const uploadResponse = await cloudinary.uploader.upload(coverImg);
+            let uploadResponse = await cloudinary.uploader.upload(coverImg);
             coverImg = uploadResponse.secure_url;
          }
+
 
          user.fullname = fullname || user.fullname;
          user.email = email || user.email;
@@ -141,7 +150,7 @@ export const updateUser = async (req,res) =>{
 
          user = await user.save();
 
-         user.passord = null;
+         user.password = null;
 
          return res.status(200).json(user);
     } catch (error) {

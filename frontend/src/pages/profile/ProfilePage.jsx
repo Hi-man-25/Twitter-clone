@@ -4,14 +4,16 @@ import  {useEffect} from 'react';
 import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModel";
-
 import { POSTS } from "../../utils/db/dummy";
 import {formatMemberSinceDate } from '../../utils/date/index.js';
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
+import {  useQuery, useQueryClient , useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
+import useFollow from '../../hooks/useFollow.jsx';
 
 const ProfilePage = () => {
 
@@ -22,8 +24,11 @@ const ProfilePage = () => {
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
 	const {username} = useParams();
+	const queryClient = useQueryClient();
 
-	const isMyProfile = true; 
+	const {data:authUser} = useQuery({queryKey : ["authUser"]});
+
+	
 
 	const {data:user , isLoading , refetch , isRefetching} = useQuery({
 		queryKey:['userProfile'],
@@ -42,7 +47,48 @@ const ProfilePage = () => {
 		}
 	});
 
+	const isMyProfile = authUser._id === user?._id; 
+
 	const memberSinceDate = formatMemberSinceDate(user?.createdAt);
+
+	const {follow , isPending} = useFollow();
+	const amIfollowing = authUser?.following.includes(user?._id);
+
+	const {mutate:updateProfile , isPending:isPending2} = useMutation({
+		mutationFn : async () => {
+			try {
+				const res = await fetch(`/api/users/update` , {
+					method:'POST',
+					headers : {
+						"Content-Type" : "application/json",
+					},
+					body : JSON.stringify({
+						coverImg ,
+						profileImg,
+					}),
+				});
+				const data = res.json();
+				// console.log('here' , isPending2);
+				if(!res.ok) throw new Error(data.error || "Something went Wrong");
+				console.log('data' ,data);
+				return data;
+			} catch (error) {
+				throw new Error(error.message);
+			}
+		},
+		onSuccess : () => {
+			toast.success("profile update sucessfully");
+			Promise.all([
+				queryClient.invalidateQueries({queryKey : ["authUser"]}),
+				queryClient.invalidateQueries({queryKey : ["userProfile"]}),
+			])
+		},
+		onError : (error) => {
+			toast.error(error.message);
+		}
+	});
+
+	// console.log(isPending2);
 
 	
 
@@ -58,6 +104,7 @@ const ProfilePage = () => {
 		}
 	};
 
+	useFollow();
 	useEffect(() => {
 		refetch();
 	} , [username , refetch , username])
@@ -124,21 +171,23 @@ const ProfilePage = () => {
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal />}
+								{isMyProfile && <EditProfileModal  authUser={authUser}/>}
 								{!isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => alert("Followed successfully")}
+										onClick={() => follow(user?._id)}
 									>
-										Follow
+										{isPending && "Loading..."}
+										{!isPending && amIfollowing && "Unfollow"}
+										{!isPending && !amIfollowing && "follow"}
 									</button>
 								)}
 								{(coverImg || profileImg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => alert("Profile updated successfully")}
+										onClick={() => updateProfile()}
 									>
-										Update
+										{isPending2 ? "Updating..." : "update"}
 									</button>
 								)}
 							</div>
