@@ -14,7 +14,7 @@ const Post = ({ post }) => {
 	const {data:authUser} = useQuery({queryKey : ["authUser"]});
 	const queryClient = useQueryClient();
 
-	const {mutate : deletePost , isPending} = useMutation({
+	const {mutate : deletePost , isPending:isDeleting} = useMutation({
 		mutationFn : async () =>{
 			try {
 				const res =  await fetch(`/api/post/${post._id}` ,{
@@ -24,6 +24,7 @@ const Post = ({ post }) => {
 			 	if(!res.ok) {
 					throw new Error(data.error || "something went wrong");
 				}
+				console.log('data' , data);
 				 return data;
 			} catch (error) {
 				throw new Error(error);
@@ -38,8 +39,12 @@ const Post = ({ post }) => {
 
 	const postOwner = post.user;
 	const isLiked = false;
+	// console.log(post.user);
+	// console.log("authuserid" , authUser._id);
+	// console.log("postuserid" , post._id);
 
-	const isMyPost = authUser._id === post.user._id;
+	const isMyPost = authUser._id === post.user;
+	// console.log(isMyPost);
 
 	const formattedDate = "1h";
 
@@ -73,10 +78,10 @@ const Post = ({ post }) => {
 							<span>·</span>
 							<span>{formattedDate}</span>
 						</span>
-						{isMyPost && (
+						{isMyPost &&  (
 							<span className='flex justify-end flex-1'>
-								{!isPending && <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
-								{isPending && (
+								{!isDeleting && <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
+								{isDeleting && (
 									<LoadingSpinner size = 'sm' />
 								)}
 							</span>

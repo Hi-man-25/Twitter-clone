@@ -14,7 +14,7 @@ const CreatePost = () => {
 	const queryClient = useQueryClient();
 
 	const {mutate:createPost , isPending , isError , error} = useMutation({
-		mutationFn : async ({text , img}) =>{
+		mutationFn : async ({text , img}) => {
 			try {
 				const res = await fetch("/api/post/create" , {
 					method : "POST",
@@ -24,12 +24,13 @@ const CreatePost = () => {
 					body : JSON.stringify({text, img}),
 				});
 				const data = await res.json();
+				// console.log(res);
 				if(!res.ok){
 					throw new Error(data.error || "Somthing went wrong");
 				}
 				return data;
 			} catch (error) {
-				throw new Error(error);	
+				throw new Error("herer only" , error);	
 			}
 		},
 		onSuccess : () => {

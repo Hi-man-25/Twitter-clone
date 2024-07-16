@@ -1,8 +1,12 @@
 import User from "../models/user.model.js";
 import Post from '../models/post.model.js';
 import {v2 as cloudinary} from 'cloudinary';
-
 export  const createPost = async(req,res) => {
+    cloudinary.config({
+    cloud_name : 'dpynmf6k2',
+    api_key : '511771528827698',
+    api_secret : 'E-YyoiWAy5PNwWGrnmldLu7e4tw',
+})
     try {
         const { text } = req.body;
         let { img } = req.body;
@@ -10,15 +14,15 @@ export  const createPost = async(req,res) => {
         
         const user = await User.findById(userId);
         if(!user) return res.status(404).json({message : "user not found"});
+
         if(!text && !img){
             return res.status(400).json({message : "Post must have image or text"});
         }
 
         if(img){
-            const uploadResponse = await cloudinary.uploader.upload(img);
-            img = uploadResponse.secre_url;
+            const uploadResponse = await cloudinary.uploader.upload(img).catch((error)=> console.log(error));
+            img = uploadResponse.secure_url;
         }
-
 
         const newPost = new Post({
             user : userId,
@@ -27,10 +31,10 @@ export  const createPost = async(req,res) => {
         })
 
         await newPost.save();
-        res.status(200).json({newPost});
+        res.status(200).json(newPost);
         
     } catch (error) {
-        console.log("error in post controllers in  createPost : " , error.message);
+        console.log("error in post controllers in createPost : " , error.message);
         res.status(500).json({error : "Internal server Error"});
     }
 }
@@ -103,6 +107,11 @@ export const commentPost = async (req,res) =>{
 }
 
 export const deletePost = async (req,res) => {
+    cloudinary.config({
+        cloud_name : 'dpynmf6k2',
+        api_key : '511771528827698',
+        api_secret : 'E-YyoiWAy5PNwWGrnmldLu7e4tw',
+    })
     try {
         const post = await Post.findById(req.params.id);
         if(!post) {
@@ -142,8 +151,8 @@ export const getAllPosts = async(req,res) => {
         if(posts.length === 0){
             return res.status(200).json([]);
         }
-
-        res.return(200).json(posts);
+        // console.log(res);
+        res.status(200).json(posts);
     } catch (error) {
         console.log("Error in getAllposts in cotrollers : " ,error.message);
         res.status(500).json({error:'Internal server error'});
