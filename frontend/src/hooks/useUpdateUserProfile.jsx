@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const useUpdateUserProfile = () => {
     const queryClient = useQueryClient();
-    const {mutate:updateProfile , isPending:isUpdatingUserProfile} = useMutation({
+    const {mutateAsync:updateProfile , isPending:isUpdatingUserProfile} = useMutation({
 		mutationFn : async (formData) => {
 			try {
 				const res = await fetch(`/api/users/update` , {
