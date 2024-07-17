@@ -1,11 +1,8 @@
-import { useQueryClient ,useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-// import { useMutation , useQueryClient } from "@tanstack/react-query";
-
+import useUpdateUserProfile from '../../hooks/useUpdateUserProfile.jsx';
 const EditProfileModal = ({authUser}) => {
 	const [formData, setFormData] = useState({
-		fullName: "",
+		fullname: "",
 		username: "",
 		email: "",
 		bio: "",
@@ -13,38 +10,8 @@ const EditProfileModal = ({authUser}) => {
 		newPassword: "",
 		currentPassword: "",
 	});
-	const queryClient = useQueryClient();
 
-	const {mutate:updateProfile , isPending:isPending2} = useMutation({
-		mutationFn : async () => {
-			try {
-				const res = await fetch(`/api/users/update` , {
-					method:'POST',
-					headers : {
-						"Content-Type" : "application/json",
-					},
-					body : JSON.stringify({formData}),
-				});
-				const data = res.json();
-				// console.log('here' , isPending2);
-				if(!res.ok) throw new Error(data.error || "Something went Wrong");
-				console.log('data' ,data);
-				return data;
-			} catch (error) {
-				throw new Error(error.message);
-			}
-		},
-		onSuccess : () => {
-			toast.success("profile update sucessfully");
-			Promise.all([
-				queryClient.invalidateQueries({queryKey : ["authUser"]}),
-				queryClient.invalidateQueries({queryKey : ["userProfile"]}),
-			])
-		},
-		onError : (error) => {
-			toast.error(error.message);
-		}
-	});
+	const {updateProfile , inUpdatingProfile} = useUpdateUserProfile();
 
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -79,7 +46,7 @@ const EditProfileModal = ({authUser}) => {
 						className='flex flex-col gap-4'
 						onSubmit={(e) => {
 							e.preventDefault();
-							updateProfile();
+							updateProfile(formData);
 						}}
 					>
 						<div className='flex flex-wrap gap-2'>
@@ -87,8 +54,8 @@ const EditProfileModal = ({authUser}) => {
 								type='text'
 								placeholder='Full Name'
 								className='flex-1 input border border-gray-700 rounded p-2 input-md'
-								value={formData.fullName}
-								name='fullName'
+								value={formData.fullname}
+								name='fullname'
 								onChange={handleInputChange}
 							/>
 							<input
@@ -144,7 +111,7 @@ const EditProfileModal = ({authUser}) => {
 							onChange={handleInputChange}
 						/>
 						<button className='btn btn-primary rounded-full btn-sm text-white'>
-							{ isPending2 ? "updating... " : "update"}
+							{ inUpdatingProfile ? "updating... " : "update"}
 						</button>
 					</form>
 				</div>
